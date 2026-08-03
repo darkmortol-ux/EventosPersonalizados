@@ -1,0 +1,95 @@
+# ==========================================================
+#  Configuración de Eventos Personalizados
+#  Todos los "interval-minutes" están en minutos reales.
+#  "duration-seconds" es la duración del evento una vez activo.
+# ==========================================================
+
+broadcast-events: true   # Anunciar por chat cuando empieza/termina un evento
+
+meteor-shower:
+  enabled: true
+  interval-minutes: 45
+  duration-seconds: 60
+  meteors-per-second: 2       # cuántos meteoros caen por segundo
+  radius: 40                  # radio alrededor de cada jugador donde pueden caer
+  explosion-power: 3.0
+  set-fire: true
+
+mob-invasion:
+  enabled: true
+  interval-minutes: 60
+  duration-seconds: 90
+  mob-count: 20                # cantidad total de mobs que aparecen
+  spawn-radius: 25             # radio alrededor de cada jugador
+  mob-types:
+    - ZOMBIE
+    - SKELETON
+    - SPIDER
+    - HUSK
+
+eternal-night:
+  enabled: true
+  interval-minutes: 90
+  duration-seconds: 300
+  buff-mobs: true               # mobs más fuertes durante el evento
+  bonus-xp: 5                   # XP extra por cada mob matado durante el evento
+  loot-table:
+    - ROTTEN_FLESH
+    - IRON_INGOT
+    - EMERALD
+    - GOLDEN_APPLE
+
+toxic-storm:
+  enabled: true
+  interval-minutes: 50
+  duration-seconds: 60
+  damage-per-tick: 1.0
+  tick-interval-seconds: 3
+  only-outdoors: true           # solo afecta a jugadores sin techo sobre su cabeza
+
+supreme-chest:
+  enabled: true
+  interval-minutes: 70
+  max-distance: 1000                    # distancia máxima en bloques desde la coordenada 0,0 donde puede aparecer
+  time-limit-minutes: 10                # minutos para encontrarlo y abrirlo antes de que desaparezca
+  reminder-interval-minutes: 2          # cada cuántos minutos se recuerdan las coordenadas por chat
+  final-warning-minutes: 2              # últimos X minutos donde se avisa que está por desaparecer
+  final-warning-interval-seconds: 30    # cada cuántos segundos se repite ese aviso final
+  loot:
+    - item: NETHERITE_INGOT
+      min: 1
+      max: 1
+    - item: DIAMOND
+      min: 3
+      max: 8
+    - item: EMERALD
+      min: 5
+      max: 15
+    - item: GOLDEN_APPLE
+      min: 2
+      max: 4
+
+random-boss:
+  enabled: true
+  interval-minutes: 120
+  min-players: 3
+  boss-health: 200.0
+  boss-damage: 8.0
+  reward-money: 500             # requiere plugin de economía (Vault) opcional
+  reward-items:
+    - item: NETHERITE_SCRAP
+      min: 1
+      max: 2
+    - item: DIAMOND
+      min: 5
+      max: 10
+
+parkour-race:
+  enabled: true
+  interval-minutes: 100
+  min-players: 2
+  duration-seconds: 180         # tiempo máximo para completar la carrera
+  checkpoints: 8                # cantidad de plataformas generadas
+  reward-first: 1000
+  reward-second: 500
+  reward-third: 250

@@ -1,0 +1,19 @@
+name: EventosPersonalizados
+version: '1.0.0'
+main: com.miplugin.eventos.EventosPlugin
+api-version: '1.21'
+author: DARKMORTOL
+description: Plugin de eventos personalizados para servidores survival
+softdepend: [Vault]
+
+commands:
+  eventos:
+    description: Comando principal para gestionar los eventos personalizados
+    usage: /eventos <start|stop|list|reload> [evento]
+    permission: eventos.admin
+    permission-message: No tienes permiso para usar este comando.
+
+permissions:
+  eventos.admin:
+    description: Permite administrar los eventos personalizados
+    default: op
