@@ -147,7 +147,7 @@ public class ParkourRaceEvent implements ServerEvent, Listener {
         String placeText = switch (place) {
             case 1 -> ChatColor.GOLD + "1er lugar";
             case 2 -> ChatColor.GRAY + "2do lugar";
-            case 3 -> ChatColor.of("#CD7F32") + "3er lugar";
+            case 3 -> net.md_5.bungee.api.ChatColor.of("#CD7F32") + "3er lugar";
             default -> place + "° lugar";
         };
 
@@ -195,4 +195,4 @@ public class ParkourRaceEvent implements ServerEvent, Listener {
                     + "La carrera de parkour ha terminado.");
         }
     }
-}
+                }
