@@ -2,6 +2,7 @@ package com.miplugin.eventos;
 
 import com.miplugin.eventos.commands.EventosCommand;
 import com.miplugin.eventos.events.EventManager;
+import com.miplugin.eventos.integration.SistemaClasesHook;
 import com.miplugin.eventos.utils.EconomyManager;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,6 +12,7 @@ public class EventosPlugin extends JavaPlugin {
     private static EventosPlugin instance;
     private EventManager eventManager;
     private EconomyManager economyManager;
+    private SistemaClasesHook sistemaClasesHook;
 
     @Override
     public void onEnable() {
@@ -18,6 +20,7 @@ public class EventosPlugin extends JavaPlugin {
         saveDefaultConfig();
 
         this.economyManager = new EconomyManager(this);
+        this.sistemaClasesHook = new SistemaClasesHook(this);
 
         // Se conecta a Vault cuando TODOS los plugins ya cargaron,
         // así no importa si el plugin de economía (Essentials, etc.) carga después que este.
@@ -60,5 +63,9 @@ public class EventosPlugin extends JavaPlugin {
 
     public EconomyManager getEconomyManager() {
         return economyManager;
+    }
+
+    public SistemaClasesHook getSistemaClasesHook() {
+        return sistemaClasesHook;
     }
 }
