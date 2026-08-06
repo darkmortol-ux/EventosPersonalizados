@@ -68,6 +68,8 @@ supreme-chest:
     - item: GOLDEN_APPLE
       min: 2
       max: 4
+    - item: SISTEMA_CLASES:ESTRELLA_CAMBIO
+      chance: 0.05    # 5% de probabilidad de aparecer en el cofre
 
 random-boss:
   enabled: true
