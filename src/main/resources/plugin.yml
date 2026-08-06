@@ -4,7 +4,7 @@ main: com.miplugin.eventos.EventosPlugin
 api-version: '1.21'
 author: DARKMORTOL
 description: Plugin de eventos personalizados para servidores survival
-softdepend: [Vault]
+softdepend: [Vault, SistemaClases]
 
 commands:
   eventos:
