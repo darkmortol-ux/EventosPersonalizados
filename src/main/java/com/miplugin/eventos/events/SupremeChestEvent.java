@@ -27,6 +27,7 @@ public class SupremeChestEvent implements ServerEvent, Listener {
     private Location chestLocation;
     private boolean running = false;
     private boolean listenerRegistered = false;
+    private boolean chestHasEstrella = false;
 
     public SupremeChestEvent(EventosPlugin plugin) {
         this.plugin = plugin;
@@ -60,6 +61,7 @@ public class SupremeChestEvent implements ServerEvent, Listener {
         if (onlinePlayers.isEmpty()) return;
 
         running = true;
+        chestHasEstrella = false;
         var config = plugin.getConfig();
         int maxDistance = config.getInt(getId() + ".max-distance", 1000);
         int timeLimitMinutes = config.getInt(getId() + ".time-limit-minutes", 10);
@@ -92,6 +94,12 @@ public class SupremeChestEvent implements ServerEvent, Listener {
                     + "¡Un cofre supremo ha aparecido en " + world.getName()
                     + " (" + x + ", " + y + ", " + z + ")! Tienes " + timeLimitMinutes
                     + " minutos para encontrarlo antes de que desaparezca.");
+
+            if (chestHasEstrella) {
+                plugin.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "[Evento] "
+                        + ChatColor.YELLOW + "¡Esta vez el cofre contiene una " + ChatColor.LIGHT_PURPLE
+                        + "★ Estrella del Cambio" + ChatColor.YELLOW + "! ¡Corran por ella!");
+            }
         }
 
         endTask = plugin.getServer().getScheduler().runTaskLater(plugin, this::stop, timeLimitMinutes * 60L * 20L);
@@ -171,7 +179,8 @@ public class SupremeChestEvent implements ServerEvent, Listener {
             String itemName = section.getString("item");
             int min = section.getInt("min", 1);
             int max = section.getInt("max", 1);
-            addLootItem(chest, itemName, min, max);
+            double chance = section.getDouble("chance", 1.0);
+            addLootItem(chest, itemName, min, max, chance);
         }
     }
 
@@ -179,15 +188,35 @@ public class SupremeChestEvent implements ServerEvent, Listener {
         Object itemObj = map.get("item");
         Object minObj = map.get("min");
         Object maxObj = map.get("max");
+        Object chanceObj = map.get("chance");
         if (itemObj == null) return;
 
         int min = minObj instanceof Number ? ((Number) minObj).intValue() : 1;
         int max = maxObj instanceof Number ? ((Number) maxObj).intValue() : 1;
-        addLootItem(chest, itemObj.toString(), min, max);
+        double chance = chanceObj instanceof Number ? ((Number) chanceObj).doubleValue() : 1.0;
+        addLootItem(chest, itemObj.toString(), min, max, chance);
     }
 
-    private void addLootItem(Chest chest, String itemName, int min, int max) {
+    private void addLootItem(Chest chest, String itemName, int min, int max, double chance) {
         if (itemName == null) return;
+
+        // Roll de probabilidad: chance=1.0 (default) siempre dropea, igual que el comportamiento original
+        if (chance < 1.0 && random.nextDouble() > chance) {
+            return;
+        }
+
+        // Ítem especial provisto por otro plugin (SistemaClases), en vez de un Material vanilla
+        if (itemName.equalsIgnoreCase("SISTEMA_CLASES:ESTRELLA_CAMBIO")) {
+            ItemStack estrella = plugin.getSistemaClasesHook().crearEstrellaCambio();
+            if (estrella != null) {
+                chest.getBlockInventory().addItem(estrella);
+                chestHasEstrella = true;
+            } else {
+                plugin.getLogger().warning("SistemaClases no está disponible; se omitió la Estrella del Cambio del cofre supremo.");
+            }
+            return;
+        }
+
         try {
             Material material = Material.valueOf(itemName.toUpperCase());
             int amount = min + (max > min ? random.nextInt(max - min + 1) : 0);
