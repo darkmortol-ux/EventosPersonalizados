@@ -56,6 +56,8 @@ supreme-chest:
   final-warning-minutes: 2              # últimos X minutos donde se avisa que está por desaparecer
   final-warning-interval-seconds: 30    # cada cuántos segundos se repite ese aviso final
   loot:
+    - item: SISTEMA_CLASES:ESTRELLA_CAMBIO
+      chance: 0.05
     - item: NETHERITE_INGOT
       min: 1
       max: 1
@@ -68,8 +70,6 @@ supreme-chest:
     - item: GOLDEN_APPLE
       min: 2
       max: 4
-    - item: SISTEMA_CLASES:ESTRELLA_CAMBIO
-      chance: 0.05    # 5% de probabilidad de aparecer en el cofre
 
 random-boss:
   enabled: true
