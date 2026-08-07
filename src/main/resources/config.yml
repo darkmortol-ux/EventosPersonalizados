@@ -75,6 +75,7 @@ random-boss:
   enabled: true
   interval-minutes: 120
   min-players: 3
+  essence-drop-chance: 0.15    # 15% de probabilidad de dropear una esencia de clase al morir el jefe
   boss-health: 200.0
   boss-damage: 8.0
   reward-money: 500             # requiere plugin de economía (Vault) opcional
