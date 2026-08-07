@@ -122,11 +122,24 @@ public class RandomBossEvent implements ServerEvent, Listener {
                             + ChatColor.GRAY + "(recompensa en dinero no disponible: instala Vault + un plugin de economía)");
                 }
             }
-            if (rewardItems != null) {
+if (rewardItems != null) {
                 for (Object obj : rewardItems) {
                     if (obj instanceof java.util.Map<?, ?> map) {
                         giveRewardItem(killer, map);
                     }
+                }
+            }
+
+            double essenceChance = config.getDouble(getId() + ".essence-drop-chance", 0.15);
+            if (random.nextDouble() < essenceChance) {
+                ItemStack esencia = plugin.getSistemaClasesHook().crearEsenciaAleatoria();
+                if (esencia != null) {
+                    var leftover = killer.getInventory().addItem(esencia);
+                    leftover.values().forEach(item ->
+                            killer.getWorld().dropItemNaturally(killer.getLocation(), item));
+                    killer.sendMessage(ChatColor.LIGHT_PURPLE + "¡El jefe dejó caer una esencia de clase!");
+                } else {
+                    plugin.getLogger().warning("SistemaClases no está disponible; se omitió el drop de esencia del jefe.");
                 }
             }
         }
