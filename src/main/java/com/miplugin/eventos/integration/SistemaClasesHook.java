@@ -33,8 +33,9 @@ public class SistemaClasesHook {
         } catch (Exception e) {
             plugin.getLogger().warning("No se pudo obtener la Estrella del Cambio de SistemaClases: " + e.getMessage());
             return null;
-    }    
-    
+        }
+    }
+
     /** Pide una Esencia de Clase aleatoria a SistemaClases vía reflexión. Null si no está disponible. */
     public ItemStack crearEsenciaAleatoria() {
         Plugin sistemaClases = Bukkit.getPluginManager().getPlugin("SistemaClases");
@@ -51,3 +52,4 @@ public class SistemaClasesHook {
             return null;
         }
     }
+}
