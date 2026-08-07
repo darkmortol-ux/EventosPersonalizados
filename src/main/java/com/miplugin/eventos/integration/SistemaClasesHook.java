@@ -33,6 +33,21 @@ public class SistemaClasesHook {
         } catch (Exception e) {
             plugin.getLogger().warning("No se pudo obtener la Estrella del Cambio de SistemaClases: " + e.getMessage());
             return null;
+    }    
+    
+    /** Pide una Esencia de Clase aleatoria a SistemaClases vía reflexión. Null si no está disponible. */
+    public ItemStack crearEsenciaAleatoria() {
+        Plugin sistemaClases = Bukkit.getPluginManager().getPlugin("SistemaClases");
+        if (sistemaClases == null) return null;
+
+        try {
+            Method getEsenciaService = sistemaClases.getClass().getMethod("getEsenciaService");
+            Object esenciaService = getEsenciaService.invoke(sistemaClases);
+
+            Method crearAleatoria = esenciaService.getClass().getMethod("crearAleatoria");
+            return (ItemStack) crearAleatoria.invoke(esenciaService);
+        } catch (Exception e) {
+            plugin.getLogger().warning("No se pudo obtener la Esencia de Clase de SistemaClases: " + e.getMessage());
+            return null;
         }
     }
-}
