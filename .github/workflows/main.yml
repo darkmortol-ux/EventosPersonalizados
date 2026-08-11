@@ -31,7 +31,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: EventosPersonalizados-jar
-          path: target/*.jar
+          path: |
+            target/*.jar
+            !target/original-*.jar
 
       - name: Publicar/actualizar Release con el .jar
         if: github.event_name == 'push'
@@ -42,7 +44,7 @@ jobs:
           body: |
             Compilación automática más reciente del plugin EventosPersonalizados.
             Generada desde el commit ${{ github.sha }}.
-          files: target/*.jar
+          files: target/EventosPersonalizados-1.0.0.jar
           make_latest: true
           prerelease: false
         env:
