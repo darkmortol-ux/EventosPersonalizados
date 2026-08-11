@@ -35,7 +35,13 @@ jobs:
             target/*.jar
             !target/original-*.jar
 
-      - name: Publicar/actualizar Release con el .jar
+      - name: Borrar la release "latest" anterior (si existe) para empezar limpio
+        if: github.event_name == 'push'
+        run: gh release delete latest --yes --cleanup-tag || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicar Release con el .jar
         if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
