@@ -51,4 +51,10 @@ Todo se ajusta en `plugins/EventosPersonalizados/config.yml`:
 - `duration-seconds`: cuánto dura el evento una vez activo
 - Parámetros específicos de cada evento (cantidad de mobs, XP, loot, jugadores mínimos, etc.)
 
+---
+Mis Plugins
 
+https://github.com/darkmortol-ux/RangosMC
+https://github.com/darkmortol-ux/BordePersonalizado
+https://github.com/darkmortol-ux/ProteccionAreas
+https://github.com/darkmortol-ux/SistemaClases
