@@ -14,6 +14,8 @@ public class EventManager {
     private final EventosPlugin plugin;
     private final Map<String, ServerEvent> events = new LinkedHashMap<>();
     private final Map<String, BukkitTask> scheduledTasks = new LinkedHashMap<>();
+    /** Timestamp (millis) estimado en el que cada evento en curso deberia terminar. Usado solo para mostrar cuentas regresivas (ej: en un scoreboard). */
+    private final Map<String, Long> finalizaEnMillis = new LinkedHashMap<>();
 
     public EventManager(EventosPlugin plugin) {
         this.plugin = plugin;
@@ -60,7 +62,54 @@ public class EventManager {
             Bukkit.broadcastMessage(ChatColor.GOLD + "[Evento] " + ChatColor.YELLOW
                     + "¡Comienza: " + event.getDisplayName() + ChatColor.YELLOW + "!");
         }
+
+        long duracionSegundos = calcularDuracionSegundos(event);
+        if (duracionSegundos > 0) {
+            finalizaEnMillis.put(event.getId(), System.currentTimeMillis() + duracionSegundos * 1000L);
+        } else {
+            finalizaEnMillis.remove(event.getId());
+        }
+
         event.start();
+    }
+
+    /**
+     * Calcula cuantos segundos deberia durar el evento leyendo su config.
+     * Soporta las dos convenciones usadas por los eventos existentes:
+     * "duration-seconds" (la mayoria) y "time-limit-minutes" (cofre supremo).
+     * Devuelve 0 si el evento no tiene una duracion fija configurada (ej: boss aleatorio).
+     */
+    private long calcularDuracionSegundos(ServerEvent event) {
+        var config = plugin.getConfig();
+        String id = event.getId();
+
+        long duracion = config.getLong(id + ".duration-seconds", 0);
+        if (duracion <= 0) {
+            duracion = config.getLong(id + ".time-limit-minutes", 0) * 60L;
+        }
+        return duracion;
+    }
+
+    /** Devuelve el primer evento actualmente en curso, o null si ninguno esta activo. */
+    public ServerEvent getEventoActivo() {
+        for (ServerEvent event : events.values()) {
+            if (event.isRunning()) return event;
+        }
+        return null;
+    }
+
+    /**
+     * Segundos restantes estimados antes de que el evento indicado termine.
+     * Devuelve 0 si el evento no esta corriendo o no tiene duracion fija configurada.
+     */
+    public long getSegundosRestantes(String id) {
+        ServerEvent event = events.get(id);
+        if (event == null || !event.isRunning()) return 0;
+
+        Long finaliza = finalizaEnMillis.get(id);
+        if (finaliza == null) return 0;
+
+        return Math.max(0, (finaliza - System.currentTimeMillis()) / 1000);
     }
 
     public boolean forceStart(String id) {
