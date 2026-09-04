@@ -195,4 +195,4 @@ public class ParkourRaceEvent implements ServerEvent, Listener {
                     + "La carrera de parkour ha terminado.");
         }
     }
-                }
+}
