@@ -112,11 +112,27 @@ public class EventManager {
         return Math.max(0, (finaliza - System.currentTimeMillis()) / 1000);
     }
 
-    public boolean forceStart(String id) {
+    public enum StartResult {
+        STARTED,
+        NOT_FOUND,
+        ALREADY_RUNNING,
+        OTHER_EVENT_ACTIVE,
+        CANNOT_START
+    }
+
+    public StartResult forceStart(String id) {
         ServerEvent event = events.get(id);
-        if (event == null || event.isRunning()) return false;
+        if (event == null) return StartResult.NOT_FOUND;
+        if (event.isRunning()) return StartResult.ALREADY_RUNNING;
+
+        for (ServerEvent otro : events.values()) {
+            if (otro.isRunning()) return StartResult.OTHER_EVENT_ACTIVE;
+        }
+
+        if (!event.canStart()) return StartResult.CANNOT_START;
+
         triggerEvent(event);
-        return true;
+        return StartResult.STARTED;
     }
 
     public boolean forceStop(String id) {
