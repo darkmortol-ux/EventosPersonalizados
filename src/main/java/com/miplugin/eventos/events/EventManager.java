@@ -98,6 +98,11 @@ public class EventManager {
         return null;
     }
 
+    /** true si hay algun evento corriendo en este momento (sin importar cual). */
+    public boolean isAnyEventRunning() {
+        return getEventoActivo() != null;
+    }
+
     /**
      * Segundos restantes estimados antes de que el evento indicado termine.
      * Devuelve 0 si el evento no esta corriendo o no tiene duracion fija configurada.
