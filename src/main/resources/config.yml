@@ -55,19 +55,91 @@ supreme-chest:
   reminder-interval-minutes: 2          # cada cuántos minutos se recuerdan las coordenadas por chat
   final-warning-minutes: 2              # últimos X minutos donde se avisa que está por desaparecer
   final-warning-interval-seconds: 30    # cada cuántos segundos se repite ese aviso final
+  # "chance": 10.0 = 100% de probabilidad de aparecer, 5.0 = 50%, 1.0 = 10%, hasta 0.05 = 0.5%
+  # (el mínimo). Cada item se sortea de forma INDEPENDIENTE: pueden salir varios a la vez,
+  # uno solo, o incluso ninguno si todos fallan su chance. Ajusta "min"/"max" (cantidad) y
+  # "chance" (probabilidad) a tu gusto.
   loot:
     - item: NETHERITE_INGOT
       min: 1
       max: 1
+      chance: 0.5
+    - item: NETHERITE_SCRAP
+      min: 1
+      max: 2
+      chance: 1.0
     - item: DIAMOND
       min: 3
       max: 8
+      chance: 4.0
+    - item: DIAMOND_BLOCK
+      min: 1
+      max: 2
+      chance: 0.8
     - item: EMERALD
       min: 5
       max: 15
+      chance: 6.0
     - item: GOLDEN_APPLE
       min: 2
       max: 4
+      chance: 3.0
+    - item: ENCHANTED_GOLDEN_APPLE
+      min: 1
+      max: 1
+      chance: 0.3
+    - item: TOTEM_OF_UNDYING
+      min: 1
+      max: 1
+      chance: 0.2
+    - item: ELYTRA
+      min: 1
+      max: 1
+      chance: 0.05
+    - item: EXPERIENCE_BOTTLE
+      min: 8
+      max: 20
+      chance: 5.0
+    - item: IRON_INGOT
+      min: 5
+      max: 12
+      chance: 7.0
+    - item: GOLD_INGOT
+      min: 5
+      max: 10
+      chance: 6.0
+    - item: OBSIDIAN
+      min: 4
+      max: 8
+      chance: 4.0
+    - item: ANCIENT_DEBRIS
+      min: 1
+      max: 2
+      chance: 0.6
+    - item: SHULKER_SHELL
+      min: 1
+      max: 1
+      chance: 0.4
+    - item: ENDER_PEARL
+      min: 2
+      max: 5
+      chance: 3.5
+    - item: SADDLE
+      min: 1
+      max: 1
+      chance: 1.5
+    - item: NAME_TAG
+      min: 1
+      max: 1
+      chance: 1.0
+    - item: ARROW
+      min: 16
+      max: 32
+      chance: 5.0
+    - item: TNT
+      min: 2
+      max: 4
+      chance: 2.0
 
 random-boss:
   enabled: true

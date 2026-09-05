@@ -156,6 +156,13 @@ public class SupremeChestEvent implements ServerEvent, Listener {
         stop();
     }
 
+    /**
+     * Escala de "chance" de cada item del loot: 10.0 = 100% de probabilidad de aparecer,
+     * 5.0 = 50%, 1.0 = 10%, hasta 0.05 = 0.5% (el mínimo). Cada item de la lista se sortea
+     * de forma INDEPENDIENTE (pueden aparecer varios, uno solo, o ninguno).
+     */
+    private static final double CHANCE_SCALE = 10.0;
+
     private void fillChest(Chest chest) {
         List<?> lootList = plugin.getConfig().getList(getId() + ".loot");
         if (lootList == null) return;
@@ -171,7 +178,8 @@ public class SupremeChestEvent implements ServerEvent, Listener {
             String itemName = section.getString("item");
             int min = section.getInt("min", 1);
             int max = section.getInt("max", 1);
-            addLootItem(chest, itemName, min, max);
+            double chance = section.getDouble("chance", CHANCE_SCALE); // por defecto 100% si no se especifica
+            addLootItem(chest, itemName, min, max, chance);
         }
     }
 
@@ -179,15 +187,22 @@ public class SupremeChestEvent implements ServerEvent, Listener {
         Object itemObj = map.get("item");
         Object minObj = map.get("min");
         Object maxObj = map.get("max");
+        Object chanceObj = map.get("chance");
         if (itemObj == null) return;
 
         int min = minObj instanceof Number ? ((Number) minObj).intValue() : 1;
         int max = maxObj instanceof Number ? ((Number) maxObj).intValue() : 1;
-        addLootItem(chest, itemObj.toString(), min, max);
+        double chance = chanceObj instanceof Number ? ((Number) chanceObj).doubleValue() : CHANCE_SCALE;
+        addLootItem(chest, itemObj.toString(), min, max, chance);
     }
 
-    private void addLootItem(Chest chest, String itemName, int min, int max) {
+    private void addLootItem(Chest chest, String itemName, int min, int max, double chance) {
         if (itemName == null) return;
+
+        // Sorteo independiente de probabilidad: chance/10.0 = fracción (10.0 -> 1.0 = 100%)
+        double probability = Math.max(0.0, Math.min(chance, CHANCE_SCALE)) / CHANCE_SCALE;
+        if (random.nextDouble() >= probability) return; // no le tocó aparecer esta vez
+
         try {
             Material material = Material.valueOf(itemName.toUpperCase());
             int amount = min + (max > min ? random.nextInt(max - min + 1) : 0);
