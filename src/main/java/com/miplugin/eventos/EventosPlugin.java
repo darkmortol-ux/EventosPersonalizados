@@ -2,8 +2,11 @@ package com.miplugin.eventos;
 
 import com.miplugin.eventos.commands.EventosCommand;
 import com.miplugin.eventos.events.EventManager;
+import com.miplugin.eventos.gui.BlackMarketMenu;
+import com.miplugin.eventos.gui.BlackMarketMenuListener;
 import com.miplugin.eventos.gui.EventosMenu;
 import com.miplugin.eventos.gui.EventosMenuListener;
+import com.miplugin.eventos.location.LocationManager;
 import com.miplugin.eventos.utils.EconomyManager;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -14,6 +17,8 @@ public class EventosPlugin extends JavaPlugin {
     private EventManager eventManager;
     private EconomyManager economyManager;
     private EventosMenu eventosMenu;
+    private LocationManager locationManager;
+    private BlackMarketMenu blackMarketMenu;
 
     @Override
     public void onEnable() {
@@ -31,12 +36,18 @@ public class EventosPlugin extends JavaPlugin {
             }
         }, this);
 
+        this.locationManager = new LocationManager(this);
+        this.locationManager.load();
+
         this.eventManager = new EventManager(this);
         this.eventManager.registerAllEvents();
         this.eventManager.scheduleAll();
 
         this.eventosMenu = new EventosMenu(this);
         getServer().getPluginManager().registerEvents(new EventosMenuListener(this), this);
+
+        this.blackMarketMenu = new BlackMarketMenu(this);
+        getServer().getPluginManager().registerEvents(new BlackMarketMenuListener(this), this);
 
         var cmd = getCommand("eventos");
         if (cmd != null) {
@@ -70,5 +81,13 @@ public class EventosPlugin extends JavaPlugin {
 
     public EventosMenu getEventosMenu() {
         return eventosMenu;
+    }
+
+    public LocationManager getLocationManager() {
+        return locationManager;
+    }
+
+    public BlackMarketMenu getBlackMarketMenu() {
+        return blackMarketMenu;
     }
 }

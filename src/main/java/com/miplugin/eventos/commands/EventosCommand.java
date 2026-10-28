@@ -72,6 +72,25 @@ public class EventosCommand implements CommandExecutor, TabCompleter {
                 }
                 plugin.getEventosMenu().open(player);
             }
+            case "setloc" -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(ChatColor.RED + "Este comando solo puede usarse en el juego.");
+                    return true;
+                }
+                if (args.length < 2) {
+                    sender.sendMessage(ChatColor.RED + "Uso: /eventos setloc <evento>");
+                    return true;
+                }
+                String eventId = args[1].toLowerCase();
+                if (!plugin.getEventManager().getEvents().containsKey(eventId)) {
+                    sender.sendMessage(ChatColor.RED + "Ese evento no existe.");
+                    return true;
+                }
+                plugin.getLocationManager().setLocation(eventId, player.getLocation());
+                player.sendMessage(ChatColor.GREEN + "Ubicación de '" + eventId + "' asignada a tu posición actual "
+                        + ChatColor.GRAY + "(" + player.getLocation().getBlockX() + ", "
+                        + player.getLocation().getBlockY() + ", " + player.getLocation().getBlockZ() + ").");
+            }
             default -> sendHelp(sender);
         }
         return true;
@@ -96,14 +115,16 @@ public class EventosCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.YELLOW + "/eventos stop <evento>" + ChatColor.WHITE + " - Forzar detener");
         sender.sendMessage(ChatColor.YELLOW + "/eventos reload" + ChatColor.WHITE + " - Recargar config.yml");
         sender.sendMessage(ChatColor.YELLOW + "/eventos menu" + ChatColor.WHITE + " - Abrir el menú gráfico de eventos");
+        sender.sendMessage(ChatColor.YELLOW + "/eventos setloc <evento>" + ChatColor.WHITE + " - Asignar tu ubicación actual a un evento (ej. mercado-negro)");
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> options = new ArrayList<>();
         if (args.length == 1) {
-            options.addAll(List.of("list", "start", "stop", "reload", "menu"));
-        } else if (args.length == 2 && (args[0].equalsIgnoreCase("start") || args[0].equalsIgnoreCase("stop"))) {
+            options.addAll(List.of("list", "start", "stop", "reload", "menu", "setloc"));
+        } else if (args.length == 2 && (args[0].equalsIgnoreCase("start") || args[0].equalsIgnoreCase("stop")
+                || args[0].equalsIgnoreCase("setloc"))) {
             options.addAll(plugin.getEventManager().getEvents().keySet());
         }
         return options;

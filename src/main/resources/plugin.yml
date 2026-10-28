@@ -9,7 +9,7 @@ softdepend: [Vault]
 commands:
   eventos:
     description: Comando principal para gestionar los eventos personalizados
-    usage: /eventos <start|stop|list|reload|menu> [evento]
+    usage: /eventos <start|stop|list|reload|menu|setloc> [evento]
     permission: eventos.admin
     permission-message: No tienes permiso para usar este comando.
 

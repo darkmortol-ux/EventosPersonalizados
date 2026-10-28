@@ -35,7 +35,7 @@ public class EventosMenu {
         ICONS.put("toxic-storm", Material.LINGERING_POTION);
         ICONS.put("supreme-chest", Material.CHEST);
         ICONS.put("random-boss", Material.WITHER_SKELETON_SKULL);
-        ICONS.put("parkour-race", Material.SLIME_BALL);
+        ICONS.put("mercado-negro", Material.EMERALD);
     }
 
     private final EventosPlugin plugin;
