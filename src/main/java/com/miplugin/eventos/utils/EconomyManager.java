@@ -66,6 +66,35 @@ public class EconomyManager {
         }
     }
 
+    /** true si el jugador tiene al menos esa cantidad de dinero. Devuelve false si Vault no está disponible. */
+    public boolean has(Player player, double amount) {
+        if (!enabled || economy == null) {
+            return false;
+        }
+        try {
+            return economy.has(player, amount);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error al consultar el saldo con Vault de " + player.getName() + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Cobra dinero al jugador. Devuelve true solo si el cobro se completó con éxito;
+     * si Vault no está disponible o falla la transacción, devuelve false y no cobra nada.
+     */
+    public boolean withdraw(Player player, double amount) {
+        if (!enabled || economy == null || amount <= 0) {
+            return false;
+        }
+        try {
+            return economy.withdrawPlayer(player, amount).transactionSuccess();
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error al cobrar dinero con Vault a " + player.getName() + ": " + e.getMessage());
+            return false;
+        }
+    }
+
     /** Formatea una cantidad usando el formato del plugin de economía, si está disponible. */
     public String format(double amount) {
         if (enabled && economy != null) {
