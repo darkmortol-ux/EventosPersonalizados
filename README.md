@@ -128,8 +128,14 @@ Todo se ajusta en `plugins/EventosPersonalizados/config.yml`:
 2. **Cofre Supremo**: aparece dentro de un radio de `max-distance` bloques (por
    defecto 1000) alrededor de la coordenada 0,0 del mundo principal del servidor
    (el primero en `getWorlds()`, normalmente el overworld). Tiene `time-limit-minutes`
-   (10 por defecto) para ser encontrado y abierto; si nadie lo abre a tiempo, o en
-   cuanto alguien lo abre, el bloque desaparece automáticamente. Mientras está activo,
+   (10 por defecto) para ser encontrado. **Para obtener los ítems basta con hacerle click
+   derecho** (no hace falta romperlo): el cofre se queda en su lugar mientras se saca el
+   contenido y desaparece cuando se cierra. Si alguien lo deja abierto sin cerrarlo,
+   desaparece solo tras `opened-cleanup-seconds` (120 por defecto), y lo que quedara
+   adentro cae al suelo para que no se pierda. Si nadie lo abre a tiempo, desaparece con
+   todo su contenido. Si alguien lo rompe, los ítems caen como en vanilla y el evento
+   termina. Es inmune a explosiones mientras el evento está activo, y al aparecer evita
+   quedar pegado a otro cofre (cofre doble) o sobre agua/lava. Mientras nadie lo ha abierto,
    se anuncian sus coordenadas por chat cada `reminder-interval-minutes` (2 por defecto);
    durante los últimos `final-warning-minutes` (2 por defecto) se avisa que está a punto
    de desaparecer, repitiendo ese aviso cada `final-warning-interval-seconds` (30 por
@@ -140,8 +146,9 @@ Todo se ajusta en `plugins/EventosPersonalizados/config.yml`:
    **Loot con probabilidad (`chance`)**: cada item de `supreme-chest.loot` en `config.yml`
    ahora tiene un campo `chance` en escala de 0.05 a 10.0, donde `10.0` = 100% de probabilidad
    de aparecer, `5.0` = 50%, `1.0` = 10%, y `0.05` = 0.5% (el mínimo). Cada item se sortea de
-   forma **independiente** de los demás — pueden salir varios a la vez, uno solo, o incluso
-   ninguno si a todos les toca fallar. Si un item no trae `chance` en el config, se asume
+   forma **independiente** de los demás — pueden salir varios a la vez o uno solo. El
+   cofre **nunca queda vacío**: si ningún item pasa su sorteo, se agrega el de mayor
+   `chance`. Si un item no trae `chance` en el config, se asume
    `10.0` (100%, siempre aparece), para no romper configuraciones viejas. Ya dejé 19 items de
    ejemplo con variedad de rareza (desde flechas comunes hasta un Elytra al 0.05%) — ajusta
    las cantidades (`min`/`max`) y probabilidades (`chance`) a tu gusto.

@@ -55,9 +55,10 @@ supreme-chest:
   reminder-interval-minutes: 2          # cada cuántos minutos se recuerdan las coordenadas por chat
   final-warning-minutes: 2              # últimos X minutos donde se avisa que está por desaparecer
   final-warning-interval-seconds: 30    # cada cuántos segundos se repite ese aviso final
+  opened-cleanup-seconds: 120           # si alguien abre el cofre pero no lo cierra, desaparece solo tras estos segundos
   # "chance": 10.0 = 100% de probabilidad de aparecer, 5.0 = 50%, 1.0 = 10%, hasta 0.05 = 0.5%
   # (el mínimo). Cada item se sortea de forma INDEPENDIENTE: pueden salir varios a la vez,
-  # uno solo, o incluso ninguno si todos fallan su chance. Ajusta "min"/"max" (cantidad) y
+  # uno solo (el cofre nunca queda vacío: si todos fallan, se agrega el de mayor chance). Ajusta "min"/"max" (cantidad) y
   # "chance" (probabilidad) a tu gusto.
   loot:
     - item: NETHERITE_INGOT
