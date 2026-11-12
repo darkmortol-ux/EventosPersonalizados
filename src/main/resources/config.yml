@@ -148,6 +148,7 @@ random-boss:
   min-players: 3
   boss-health: 200.0
   boss-damage: 8.0
+  duration-seconds: 900         # tiempo máximo para derrotarlo; si se acaba, el jefe escapa y el evento termina
   reward-money: 500             # requiere plugin de economía (Vault) opcional
   reward-items:
     - item: NETHERITE_SCRAP
@@ -156,6 +157,45 @@ random-boss:
     - item: DIAMOND
       min: 5
       max: 10
+
+  # ------------------------------------------------------------------
+  #  Integración con SistemaClases: al derrotar al jefe, quien le da el golpe final recibe
+  #  1 esencia de clase elegida por porcentaje. SistemaClases hace la entrega real mediante
+  #  un comando de consola, así este plugin no depende de él al compilar.
+  #
+  #  PASOS PARA ACTIVARLO:
+  #   1. Pon en "command" el comando EXACTO de SistemaClases que entrega una esencia
+  #      ({player} = jugador, {class} = el "id" de la esencia sorteada).
+  #   2. Pon en cada "id" el nombre de la clase tal como lo espera ese comando.
+  #   3. Prueba con  /eventos esencia <jugador>  (no hace falta matar al jefe).
+  #   4. Cuando funcione, cambia "enabled" a true.
+  # ------------------------------------------------------------------
+  sistema-clases:
+    enabled: false                # IMPORTANTE: déjalo en false hasta que la prueba del paso 3 funcione
+    plugin-name: SistemaClases    # nombre del plugin.yml (name:), NO el del repositorio de GitHub
+    drop-chance: 100.0            # % de que el jefe suelte una esencia al morir (100 = siempre suelta 1)
+    command: "clases esencia dar {player} {class}"   # EJEMPLO: cámbialo por el comando real, sin "/"
+    # Se elige exactamente 1 de las 6. "chance" es el porcentaje relativo de cada una;
+    # si suman 100 se leen como porcentajes exactos (admite decimales, ej. 0.5).
+    essences:
+      - id: guerrero
+        name: Guerrero
+        chance: 17
+      - id: mago
+        name: Mago
+        chance: 17
+      - id: arquero
+        name: Arquero
+        chance: 17
+      - id: tanque
+        name: Tanque
+        chance: 17
+      - id: asesino
+        name: Asesino
+        chance: 16
+      - id: clerigo
+        name: Clérigo
+        chance: 16
 
 
 

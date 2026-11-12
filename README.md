@@ -12,7 +12,7 @@ y configurables desde `config.yml`.
 | Noche Eterna | `eternal-night` | cada X minutos, XP y loot configurable |
 | Tormenta Tóxica | `toxic-storm` | cada X minutos |
 | Cofre Supremo | `supreme-chest` | cada X minutos, aparece cerca de la coordenada 0,0 |
-| Jefe Aleatorio | `random-boss` | cada X minutos + mínimo de jugadores |
+| Jefe Aleatorio | `random-boss` | cada X minutos + mínimo de jugadores; suelta esencia de SistemaClases |
 | Mercado Negro | `mercado-negro` | cada X minutos, 50 ofertas con stock compartido |
 
 ## Requisitos para compilar
@@ -60,6 +60,7 @@ El .jar final quedará en `target/EventosPersonalizados-1.0.0.jar`. Cópialo a l
 - `/eventos stop <evento>` — fuerza la detención de un evento
 - `/eventos reload` — recarga `config.yml` sin reiniciar el servidor
 - `/eventos menu` — abre un menú gráfico (inventario) para iniciar o pausar eventos con click
+- `/eventos esencia <jugador>` — prueba la entrega de esencia del jefe sin matarlo (ver sección del Jefe Aleatorio)
 
 ### Un solo evento a la vez
 
@@ -112,6 +113,36 @@ que dos compras simultáneas nunca dejen el stock en negativo.
 
 El mercado se cierra (el aldeano desaparece) al acabarse el `duration-seconds`, o antes si
 tú lo pausas desde `/eventos menu` o `/eventos stop mercado-negro`.
+
+### Jefe Aleatorio (`random-boss`) y esencias de SistemaClases
+
+Aparece un jefe cerca de un jugador al azar. Quien le da el golpe final recibe `reward-money`
+(Vault), los `reward-items` y, si activas la integración, **1 esencia de clase** (de las 6)
+elegida por porcentaje.
+
+**Seguridad del evento:** como solo puede haber 1 evento activo a la vez, el jefe tiene un límite
+de tiempo (`duration-seconds`, 900 por defecto): si nadie lo derrota, escapa y el evento termina.
+Además, un vigilante revisa cada 5 segundos que el jefe siga existiendo; si desaparece por
+cualquier causa, el evento se cierra solo. El jefe no se despawnea al alejarse, no se guarda en
+disco (no queda huérfano si el servidor se cae) y no aparece dentro de bloques. Si el inventario
+del ganador está lleno, los ítems que no caben caen al suelo.
+
+**Integración con SistemaClases** (`random-boss.sistema-clases` en `config.yml`): se hace por
+**comando de consola**, sin depender del plugin al compilar (igual que el resto de tu ecosistema,
+que no enlaza jars entre sí). Pasos:
+
+1. En `command` pon el comando exacto de SistemaClases que entrega una esencia; `{player}` es el
+   jugador y `{class}` el `id` de la esencia sorteada (sin la `/`).
+2. En cada `id` de `essences` pon el nombre de la clase tal como lo espera ese comando.
+3. En `plugin-name` pon el `name:` del `plugin.yml` de SistemaClases (no el nombre del repositorio).
+4. Prueba con `/eventos esencia <jugador>`: ejecuta la entrega sin matar al jefe e ignora
+   `enabled` y `drop-chance`. Si falla, la consola muestra el comando exacto que se intentó.
+5. Cuando funcione, cambia `enabled` a `true`.
+
+Porcentajes: se elige **exactamente 1** de las esencias de la lista con probabilidad proporcional a
+su `chance` (no hace falta que sumen 100; si suman 100 son porcentajes exactos, y admiten
+decimales). `drop-chance` es el porcentaje de que el jefe suelte esencia al morir (100 = siempre).
+Por defecto `enabled` está en `false` para que no se ejecuten comandos inexistentes.
 
 ## Configuración
 

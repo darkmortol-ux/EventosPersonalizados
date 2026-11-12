@@ -4,12 +4,12 @@ main: com.miplugin.eventos.EventosPlugin
 api-version: '1.21'
 author: DARKMORTOL
 description: Plugin de eventos personalizados para servidores survival
-softdepend: [Vault]
+softdepend: [Vault, SistemaClases]
 
 commands:
   eventos:
     description: Comando principal para gestionar los eventos personalizados
-    usage: /eventos <start|stop|list|reload|menu|setloc> [evento]
+    usage: /eventos <start|stop|list|reload|menu|setloc|esencia> [evento|jugador]
     permission: eventos.admin
     permission-message: No tienes permiso para usar este comando.
 
