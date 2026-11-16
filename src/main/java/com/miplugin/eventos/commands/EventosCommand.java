@@ -132,9 +132,7 @@ public class EventosCommand implements CommandExecutor, TabCompleter {
             case DISABLED -> ChatColor.RED + "La integración está desactivada.";
             case NO_DROP -> ChatColor.YELLOW + "El sorteo del porcentaje de drop no salió.";
             case PLUGIN_MISSING -> ChatColor.RED + "SistemaClases no está instalado o su 'plugin-name' en config.yml no coincide. Revisa la consola.";
-            case NO_ESSENCES -> ChatColor.RED + "La lista 'essences' está vacía o todos los porcentajes son 0.";
-            case NO_COMMAND -> ChatColor.RED + "Falta el 'command' en random-boss.sistema-clases del config.yml.";
-            case COMMAND_FAILED -> ChatColor.RED + "El comando de entrega falló. Revisa la consola: ahí aparece el comando exacto que se intentó.";
+            case FAILED -> ChatColor.RED + "No se pudo crear la esencia. Revisa la consola: ahí aparece el error exacto.";
         };
     }
 
