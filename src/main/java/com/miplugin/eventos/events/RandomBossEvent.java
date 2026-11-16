@@ -6,7 +6,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -16,8 +15,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +28,8 @@ import java.util.UUID;
 
 /**
  * Jefe Aleatorio: aparece un jefe cerca de un jugador al azar. Quien lo derrota recibe
- * dinero (Vault), ítems y, si está activada la integración con SistemaClases, 1 esencia
- * de clase elegida por porcentaje.
+ * dinero (Vault), ítems y, con la probabilidad "essence-drop-chance", una Esencia de Clase
+ * aleatoria de SistemaClases (pedida por reflection, sin dependencia al compilar).
  *
  * Como solo puede haber 1 evento activo a la vez, el jefe SIEMPRE tiene un límite de
  * tiempo (duration-seconds) y un vigilante que termina el evento si el jefe desaparece;
@@ -35,18 +37,16 @@ import java.util.UUID;
  */
 public class RandomBossEvent implements ServerEvent, Listener {
 
+    /** Nombre del plugin en su plugin.yml (name:), no el del repositorio. */
+    private static final String SISTEMA_CLASES = "SistemaClases";
+
     /** Resultado de intentar entregar una esencia (se usa también en /eventos esencia). */
     public enum EssenceResult {
         GIVEN,
         DISABLED,
         NO_DROP,
         PLUGIN_MISSING,
-        NO_ESSENCES,
-        NO_COMMAND,
-        COMMAND_FAILED
-    }
-
-    private record EssenceEntry(String id, String name, double chance) {
+        FAILED
     }
 
     private final EventosPlugin plugin;
@@ -210,10 +210,7 @@ public class RandomBossEvent implements ServerEvent, Listener {
             }
         }
 
-        EssenceResult result = giveEssence(killer, false);
-        if (result == EssenceResult.NO_DROP) {
-            killer.sendMessage(ChatColor.GRAY + "El jefe no soltó ninguna esencia esta vez.");
-        }
+        giveEssence(killer, false);
     }
 
     private void giveRewardItem(Player player, Map<?, ?> map) {
@@ -227,135 +224,84 @@ public class RandomBossEvent implements ServerEvent, Listener {
         int min = map.get("min") instanceof Number ? ((Number) map.get("min")).intValue() : 1;
         int max = map.get("max") instanceof Number ? ((Number) map.get("max")).intValue() : 1;
         int amount = min + (max > min ? random.nextInt(max - min + 1) : 0);
+        giveOrDrop(player, new ItemStack(material, amount));
+    }
 
-        // Si el inventario está lleno, lo que no cabe cae al suelo en vez de perderse.
-        Map<Integer, ItemStack> leftovers = player.getInventory().addItem(new ItemStack(material, amount));
+    /** Si el inventario está lleno, lo que no cabe cae al suelo en vez de perderse. */
+    private void giveOrDrop(Player player, ItemStack item) {
+        Map<Integer, ItemStack> leftovers = player.getInventory().addItem(item);
         for (ItemStack left : leftovers.values()) {
             player.getWorld().dropItemNaturally(player.getLocation(), left);
         }
     }
 
     // ------------------------------------------------------------------
-    //  Integración con SistemaClases (esencias de clase por porcentaje)
+    //  Esencias de SistemaClases (reflection, sin dependencia al compilar)
     // ------------------------------------------------------------------
 
     /**
-     * Entrega 1 esencia de clase a un jugador, elegida entre las configuradas en
-     * random-boss.sistema-clases.essences según su porcentaje. La entrega real la hace
-     * SistemaClases mediante el comando de consola configurado (sin dependencia de compilación).
+     * Probabilidad (0.0 a 1.0) de que el jefe suelte una esencia. En config.yml:
+     * essence-drop-chance: 0.15 = 15%. Si se escribe un número mayor a 1 se lee como
+     * porcentaje (15 = 15%). 0 la desactiva.
+     */
+    private double readDropChance() {
+        double chance = plugin.getConfig().getDouble(getId() + ".essence-drop-chance", 0.15);
+        if (chance > 1.0) chance = chance / 100.0;
+        return Math.max(0.0, Math.min(1.0, chance));
+    }
+
+    /**
+     * Entrega una Esencia de Clase aleatoria (la elige SistemaClases) a un jugador.
      *
-     * @param force true = ignora "enabled" y "drop-chance" (lo usa /eventos esencia para probar la config)
+     * @param force true = ignora el porcentaje de drop (lo usa /eventos esencia para probar la conexión)
      */
     public EssenceResult giveEssence(Player player, boolean force) {
-        var config = plugin.getConfig();
-        String base = getId() + ".sistema-clases";
+        double chance = readDropChance();
+        if (!force && chance <= 0.0) return EssenceResult.DISABLED;
 
-        if (!force && !config.getBoolean(base + ".enabled", false)) {
-            return EssenceResult.DISABLED;
-        }
-
-        String pluginName = config.getString(base + ".plugin-name", "SistemaClases");
-        var target = plugin.getServer().getPluginManager().getPlugin(pluginName);
-        if (target == null || !target.isEnabled()) {
-            plugin.getLogger().warning("No se entregó esencia: el plugin '" + pluginName
-                    + "' no está instalado o no está activo (revisa 'plugin-name' en config.yml; "
-                    + "debe ser el nombre del plugin.yml, no el del repositorio).");
+        Plugin sistemaClases = plugin.getServer().getPluginManager().getPlugin(SISTEMA_CLASES);
+        if (sistemaClases == null || !sistemaClases.isEnabled()) {
+            plugin.getLogger().warning("SistemaClases no está instalado o no está activo; se omitió el drop de esencia del jefe.");
             return EssenceResult.PLUGIN_MISSING;
         }
 
-        if (!force) {
-            double dropChance = Math.max(0.0, Math.min(100.0, config.getDouble(base + ".drop-chance", 100.0)));
-            if (random.nextDouble() * 100.0 >= dropChance) {
-                return EssenceResult.NO_DROP;
-            }
-        }
+        if (!force && random.nextDouble() >= chance) return EssenceResult.NO_DROP;
 
-        EssenceEntry essence = pickEssence(readEssences(base));
-        if (essence == null) {
-            plugin.getLogger().warning("random-boss.sistema-clases.essences está vacío o todos los porcentajes son 0.");
-            return EssenceResult.NO_ESSENCES;
-        }
+        ItemStack essence = createRandomEssence(sistemaClases);
+        if (essence == null) return EssenceResult.FAILED;
 
-        String command = config.getString(base + ".command", "");
-        if (command == null || command.isBlank()) {
-            plugin.getLogger().warning("random-boss.sistema-clases.command está vacío: no se sabe cómo entregar la esencia.");
-            return EssenceResult.NO_COMMAND;
-        }
-        command = command.trim();
-        if (command.startsWith("/")) command = command.substring(1);
-        command = command.replace("{player}", player.getName()).replace("{class}", essence.id());
-
-        boolean ok;
-        try {
-            ok = plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Error al ejecutar el comando de esencia '" + command + "': " + e.getMessage());
-            return EssenceResult.COMMAND_FAILED;
-        }
-        if (!ok) {
-            plugin.getLogger().warning("El comando de esencia '" + command + "' no se ejecutó correctamente. "
-                    + "Pruébalo tú mismo en la consola y corrige 'command' en config.yml.");
-            return EssenceResult.COMMAND_FAILED;
-        }
-
-        player.sendMessage(ChatColor.LIGHT_PURPLE + "¡Obtuviste la Esencia de " + essence.name() + "!");
-        if (config.getBoolean("broadcast-events", true)) {
-            plugin.getServer().broadcastMessage(ChatColor.GOLD + "[Evento] " + ChatColor.LIGHT_PURPLE
-                    + player.getName() + " obtuvo la Esencia de " + essence.name() + ".");
-        }
+        giveOrDrop(player, essence);
+        String name = essence.hasItemMeta() && essence.getItemMeta().hasDisplayName()
+                ? essence.getItemMeta().getDisplayName()
+                : "una esencia de clase";
+        player.sendMessage(ChatColor.LIGHT_PURPLE + "¡El jefe dejó caer " + name + ChatColor.LIGHT_PURPLE + "!");
         return EssenceResult.GIVEN;
     }
 
-    private List<EssenceEntry> readEssences(String base) {
-        List<EssenceEntry> entries = new ArrayList<>();
-        List<?> list = plugin.getConfig().getList(base + ".essences");
-        if (list == null) return entries;
-
-        for (Object obj : list) {
-            Object idObj;
-            Object nameObj;
-            Object chanceObj;
-
-            if (obj instanceof Map<?, ?> map) {
-                idObj = map.get("id");
-                nameObj = map.get("name");
-                chanceObj = map.get("chance");
-            } else if (obj instanceof ConfigurationSection section) {
-                idObj = section.get("id");
-                nameObj = section.get("name");
-                chanceObj = section.get("chance");
-            } else {
-                continue;
+    /**
+     * SistemaClases.getEsenciaService().crearAleatoria() vía reflection.
+     * Devuelve null si algo falla (el motivo queda en la consola).
+     */
+    private ItemStack createRandomEssence(Plugin sistemaClases) {
+        try {
+            Method getService = sistemaClases.getClass().getMethod("getEsenciaService");
+            Object service = getService.invoke(sistemaClases);
+            if (service == null) {
+                plugin.getLogger().warning("SistemaClases devolvió un EsenciaService nulo.");
+                return null;
             }
-            if (idObj == null) continue;
+            Method create = service.getClass().getMethod("crearAleatoria");
+            Object result = create.invoke(service);
+            if (result instanceof ItemStack item) return item;
 
-            String id = idObj.toString().trim();
-            if (id.isEmpty()) continue;
-            String name = nameObj != null ? nameObj.toString() : id.substring(0, 1).toUpperCase() + id.substring(1);
-            double chance = chanceObj instanceof Number number ? number.doubleValue() : 0.0;
-            entries.add(new EssenceEntry(id, name, chance));
+            plugin.getLogger().warning("SistemaClases.crearAleatoria() no devolvió un ItemStack.");
+            return null;
+        } catch (Exception e) {
+            Throwable cause = (e instanceof InvocationTargetException ite && ite.getCause() != null) ? ite.getCause() : e;
+            plugin.getLogger().warning("No se pudo obtener la esencia de SistemaClases: "
+                    + cause.getClass().getSimpleName() + ": " + cause.getMessage());
+            return null;
         }
-        return entries;
-    }
-
-    /** Elige exactamente 1 esencia con probabilidad proporcional a su "chance" (no hace falta que sumen 100). */
-    private EssenceEntry pickEssence(List<EssenceEntry> entries) {
-        double total = 0.0;
-        for (EssenceEntry entry : entries) {
-            if (entry.chance() > 0) total += entry.chance();
-        }
-        if (total <= 0) return null;
-
-        double roll = random.nextDouble() * total;
-        double cumulative = 0.0;
-        EssenceEntry last = null;
-        for (EssenceEntry entry : entries) {
-            if (entry.chance() <= 0) continue;
-            cumulative += entry.chance();
-            last = entry;
-            if (roll < cumulative) return entry;
-        }
-        return last;
     }
 
     // ------------------------------------------------------------------
